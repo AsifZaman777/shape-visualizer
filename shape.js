@@ -1,78 +1,3 @@
-
-// Custom class for resizable triangle
-// class ResizableTriangle extends PIXI.Graphics {
-//     constructor() {
-//         super();
-
-//         // Triangle points
-//         this.points = [
-//             new PIXI.Point(0, 0), // Top
-//             new PIXI.Point(0, 100), // Bottom left
-//             new PIXI.Point(100, 0) // Bottom right
-//         ];
-
-//         // Draw triangle
-//         this.redraw();
-
-//         // Create control points
-//         this.controlPoints = [];
-//         for (let i = 0; i < this.points.length; i++) {
-//             const point = new PIXI.Graphics();
-//             point.beginFill(0xFF0000);
-//             point.drawCircle(0, 0, 9);
-//             point.endFill();
-//             point.interactive = true;
-//             point.buttonMode = true;
-//             point.on('pointerdown', this.onControlPointDragStart.bind(this, i));
-//             point.on('pointerup', this.onControlPointDragEnd.bind(this, i));
-//             point.on('pointerupoutside', this.onControlPointDragEnd.bind(this, i));
-//             point.on('pointermove', this.onControlPointDragMove.bind(this, i));
-//             this.controlPoints.push(point);
-//             this.addChild(point);
-//         }
-//     }
-
-//     redraw() {
-//         this.clear();
-//         this.lineStyle(4, 0x000000);
-//         this.moveTo(this.points[0].x, this.points[0].y);
-//         this.lineTo(this.points[1].x, this.points[1].y);
-//         this.lineTo(this.points[2].x, this.points[1].y);
-//         this.lineTo(this.points[0].x, this.points[0].y);
-//     }
-
-//     onControlPointDragStart(index, event) {
-//         const point = this.points[index];
-//         point.dragData = event.data;
-//         point.dragging = true;
-//     }
-
-//     onControlPointDragEnd(index) {
-//         const point = this.points[index];
-//         if (point.dragging) {
-//             delete point.dragData;
-//             point.dragging = false;
-//         }
-//     }
-//     onControlPointDragMove(index) {
-//       const point = this.points[index];
-//       if (point.dragging) {
-//           const newPosition = point.dragData.getLocalPosition(this.parent);
-  
-//           // Ensure newPosition stays within the screen bounds
-//           newPosition.x = Math.max(0, Math.min(newPosition.x, app.renderer.width));
-//           newPosition.y = Math.max(0, Math.min(newPosition.y, app.renderer.height));
-  
-//           point.x = newPosition.x;
-//           point.y = newPosition.y;
-//           this.redraw();
-//       }
-//   }
-// }
-
-// Create PIXI application
-
-
 const app = new PIXI.Application({
   backgroundColor: 0xAAAAAA,
   resizeTo: window,
@@ -95,36 +20,85 @@ let isDrawing = false;
 let triangle = new PIXI.Graphics();
 shapeContainer.addChild(triangle);
 
+// Texts to display lengths and area
+const sideTexts = [
+  new PIXI.Text('', { fontFamily: 'Arial', fontSize: 20, fill: 0x000000 }),
+  new PIXI.Text('', { fontFamily: 'Arial', fontSize: 20, fill: 0x000000 }),
+  new PIXI.Text('', { fontFamily: 'Arial', fontSize: 28, fill: 0x000000 }),
+];
+
+
+
+sideTexts.forEach((text, index) => {
+  text.position.set(20, 20 + index * 30);
+  app.stage.addChild(text);
+});
+
+// Initial triangle coordinates
+const startX = 100;
+const startY = 300;
+const endX = 300;
+const endY = 150;
+
+// Draw initial triangle
+triangle.lineStyle(2, 0x000000); // Black color, line width 2
+triangle.moveTo(startX, startY);
+triangle.lineTo(endX, startY); // Horizontal line
+triangle.lineTo(startX, endY); // Vertical line
+triangle.lineTo(startX, startY); // Complete the triangle path
+
+// Calculate lengths of sides (scaled)
+const base = Math.abs(endX - startX) / 50;
+const height = Math.abs(endY - startY) / 50;
+const hypotenuse = Math.sqrt(base * base + height * height);
+
+// Display lengths and area (scaled)
+sideTexts[0].text = `ভূমি: ${base.toFixed(2)} units`;
+sideTexts[1].text = `উচ্চতা: ${height.toFixed(2)} units`;
+sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
+
 // Event listeners for mouse interaction
 app.renderer.view.addEventListener('mousedown', onMouseDown);
 app.renderer.view.addEventListener('mousemove', onMouseMove);
 app.renderer.view.addEventListener('mouseup', onMouseUp);
 
-let startX, startY;
-
 function onMouseDown(event) {
   isDrawing = true;
-  startX = event.clientX - app.renderer.view.offsetLeft - shapeContainer.x;
-  startY = event.clientY - app.renderer.view.offsetTop - shapeContainer.y;
 }
 
 function onMouseMove(event) {
   if (isDrawing) {
-      let currentX = event.clientX - app.renderer.view.offsetLeft - shapeContainer.x;
-      let currentY = event.clientY - app.renderer.view.offsetTop - shapeContainer.y;
+      let currentX = Math.max(0, Math.min(event.clientX - app.renderer.view.offsetLeft - shapeContainer.x, shapeContainer.width));
+      let currentY = Math.max(0, Math.min(event.clientY - app.renderer.view.offsetTop - shapeContainer.y, shapeContainer.height));
 
       triangle.clear();
-      triangle.beginFill(0xFF0000); // Red color
 
+      // Border
+      triangle.lineStyle(2, 0x000000); // Black color, line width 2
+
+      // Fill
+      triangle.beginFill(0x000000, 0); // Transparent fill
+
+      // Draw triangle
       triangle.moveTo(startX, startY);
       triangle.lineTo(currentX, startY); // Horizontal line
       triangle.lineTo(startX, currentY); // Vertical line
+      triangle.lineTo(startX, startY); // Complete the triangle path
 
       triangle.endFill();
+
+      // Calculate lengths of sides (scaled)
+      const base = Math.abs(currentX - startX) / 50;
+      const height = Math.abs(currentY - startY) / 50;
+      const hypotenuse = Math.sqrt(base * base + height * height);
+
+      // Display lengths and area (scaled)
+      sideTexts[0].text = `ভূমি: ${base.toFixed(2)} units`;
+      sideTexts[1].text = `উচ্চতা: ${height.toFixed(2)} units`;
+      sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
   }
 }
 
 function onMouseUp(event) {
   isDrawing = false;
 }
-
