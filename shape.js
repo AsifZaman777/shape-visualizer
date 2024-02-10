@@ -92,7 +92,7 @@ function onMouseMove(event) {
     triangle.lineStyle(2, 0x000000); // Black color, line width 2
 
     // Fill
-    triangle.beginFill(0x000000, 0); // Transparent fill
+    triangle.beginFill(0xFF0000, 0.5); // Red color, 50% opacity
 
     // Draw triangle
     triangle.moveTo(startX, startY);
