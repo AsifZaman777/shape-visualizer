@@ -17,6 +17,8 @@ shapeContainer.y = app.renderer.height / 2 - 300;
 app.stage.addChild(shapeContainer);
 
 let isDrawing = false;
+let isMovingEnd1 = false;
+let isMovingEnd2 = false;
 let triangle = new PIXI.Graphics();
 shapeContainer.addChild(triangle);
 
@@ -27,18 +29,16 @@ const sideTexts = [
   new PIXI.Text('', { fontFamily: 'Arial', fontSize: 28, fill: 0x000000 }),
 ];
 
-
-
 sideTexts.forEach((text, index) => {
-  text.position.set(20, 20 + index * 30);
+  text.position.set(20, 30 + index * 30);
   app.stage.addChild(text);
 });
 
 // Initial triangle coordinates
-const startX = 100;
-const startY = 300;
-const endX = 300;
-const endY = 150;
+let startX = 0;
+let startY = 700;
+let endX = 200;
+let endY = 550;
 
 // Draw initial triangle
 triangle.lineStyle(2, 0x000000); // Black color, line width 2
@@ -64,41 +64,58 @@ app.renderer.view.addEventListener('mouseup', onMouseUp);
 
 function onMouseDown(event) {
   isDrawing = true;
+  let currentX = Math.max(0, Math.min(event.clientX - app.renderer.view.offsetLeft - shapeContainer.x, shapeContainer.width));
+  let currentY = Math.max(0, Math.min(event.clientY - app.renderer.view.offsetTop - shapeContainer.y, shapeContainer.height));
+  if (Math.abs(currentX - endX) < Math.abs(currentY - endY)) {
+    isMovingEnd1 = true;
+    isMovingEnd2 = false;
+  } else {
+    isMovingEnd1 = false;
+    isMovingEnd2 = true;
+  }
 }
 
 function onMouseMove(event) {
   if (isDrawing) {
-      let currentX = Math.max(0, Math.min(event.clientX - app.renderer.view.offsetLeft - shapeContainer.x, shapeContainer.width));
-      let currentY = Math.max(0, Math.min(event.clientY - app.renderer.view.offsetTop - shapeContainer.y, shapeContainer.height));
+    let currentX = Math.max(0, Math.min(event.clientX - app.renderer.view.offsetLeft - shapeContainer.x, shapeContainer.width));
+    let currentY = Math.max(0, Math.min(event.clientY - app.renderer.view.offsetTop - shapeContainer.y, shapeContainer.height));
+    
+    if (isMovingEnd1) {
+      endX = currentX;
+    } else if (isMovingEnd2) {
+      endY = currentY;
+    }
 
-      triangle.clear();
+    triangle.clear();
 
-      // Border
-      triangle.lineStyle(2, 0x000000); // Black color, line width 2
+    // Border
+    triangle.lineStyle(2, 0x000000); // Black color, line width 2
 
-      // Fill
-      triangle.beginFill(0x000000, 0); // Transparent fill
+    // Fill
+    triangle.beginFill(0x000000, 0); // Transparent fill
 
-      // Draw triangle
-      triangle.moveTo(startX, startY);
-      triangle.lineTo(currentX, startY); // Horizontal line
-      triangle.lineTo(startX, currentY); // Vertical line
-      triangle.lineTo(startX, startY); // Complete the triangle path
+    // Draw triangle
+    triangle.moveTo(startX, startY);
+    triangle.lineTo(endX, startY); // Horizontal line
+    triangle.lineTo(startX, endY); // Vertical line
+    triangle.lineTo(startX, startY); // Complete the triangle path
 
-      triangle.endFill();
+    triangle.endFill();
 
-      // Calculate lengths of sides (scaled)
-      const base = Math.abs(currentX - startX) / 50;
-      const height = Math.abs(currentY - startY) / 50;
-      const hypotenuse = Math.sqrt(base * base + height * height);
+    // Calculate lengths of sides (scaled)
+    const base = Math.abs(endX - startX) / 50;
+    const height = Math.abs(endY - startY) / 50;
+    const hypotenuse = Math.sqrt(base * base + height * height);
 
-      // Display lengths and area (scaled)
-      sideTexts[0].text = `ভূমি: ${base.toFixed(2)} units`;
-      sideTexts[1].text = `উচ্চতা: ${height.toFixed(2)} units`;
-      sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
+    // Display lengths and area (scaled)
+    sideTexts[0].text = `ভূমি: ${base.toFixed(2)} units`;
+    sideTexts[1].text = `উচ্চতা: ${height.toFixed(2)} units`;
+    sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
   }
 }
 
 function onMouseUp(event) {
   isDrawing = false;
+  isMovingEnd1 = false;
+  isMovingEnd2 = false;
 }
