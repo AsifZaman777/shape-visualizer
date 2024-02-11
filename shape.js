@@ -24,9 +24,9 @@ shapeContainer.addChild(triangle);
 
 // Texts to display lengths and area
 const sideTexts = [
-  new PIXI.Text("", { fontFamily: "Arial", fontSize: 20, fill: 0x000000 }),
-  new PIXI.Text("", { fontFamily: "Arial", fontSize: 20, fill: 0x000000 }),
-  new PIXI.Text("", { fontFamily: "Arial", fontSize: 28, fill: 0x000000 }),
+  new PIXI.Text("", { fontFamily: "Arial", fontSize: 20, fill: 0xFFFFFF }),
+  new PIXI.Text("", { fontFamily: "Arial", fontSize: 20, fill: 0xFFFFFF }),
+  new PIXI.Text("", { fontFamily: "Arial", fontSize: 28, fill: 0xFFFFFF }),
 ];
 
 sideTexts.forEach((text, index) => {
@@ -64,10 +64,32 @@ const base = Math.abs(endX - startX) / 50;
 const height = Math.abs(endY - startY) / 50;
 const hypotenuse = Math.sqrt(base * base + height * height);
 
+const textContainer = new PIXI.Container();
+app.stage.addChild(textContainer);
+
+// Create a graphics object for the background of the text container
+
+
+// Position the text container
+textContainer.position.set(20, 20);
+
 // Display lengths and area (scaled)
 sideTexts[0].text = `ভূমি: ${base.toFixed(2)} units`;
 sideTexts[1].text = `উচ্চতা: ${height.toFixed(2)} units`;
 sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
+
+const textContainerBg = new PIXI.Graphics();
+textContainerBg.beginFill(0x000000, 0.5); // Black color with 50% opacity
+textContainerBg.drawRect(0, 0, 290, 150);
+textContainerBg.alpha=0.8;
+textContainerBg.endFill();
+textContainer.addChild(textContainerBg);
+
+// Add texts to the text container
+sideTexts.forEach((text, index) => {
+  text.position.set(20, 30 + index * 30);
+  textContainer.addChild(text);
+});
 
 // Event listeners for mouse interaction
 app.renderer.view.addEventListener("mousedown", onMouseDown);
@@ -105,14 +127,14 @@ function onMouseMove(event) {
       0,
       Math.min(
         event.clientX - app.renderer.view.offsetLeft - shapeContainer.x,
-        shapeContainer.width
+        shapeContainer.width - triangle.width+800 // Subtract triangle.width to prevent overflow
       )
     );
     let currentY = Math.max(
       0,
       Math.min(
         event.clientY - app.renderer.view.offsetTop - shapeContainer.y,
-        shapeContainer.height
+        shapeContainer.height - shapeContainer.y // Subtract shapeContainer.y to account for its position
       )
     );
 
@@ -124,7 +146,7 @@ function onMouseMove(event) {
 
     // Adjust circle position based on triangle end movement
     const circleX = isMovingEnd1 ? endX : startX;
-    const circleY = isMovingEnd2 ? endY  : startY;
+    const circleY = isMovingEnd2 ? endY : startY;
 
     triangle.clear();
 
@@ -156,6 +178,7 @@ function onMouseMove(event) {
     sideTexts[2].text = `অতিভুজ: ${hypotenuse.toFixed(2)} units`;
   }
 }
+
 
 function onMouseUp(event) {
   isDrawing = false;
