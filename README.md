@@ -1,2 +1,2 @@
 # shape-visualizer
-snake-game
+Part of the teaching assistant project.
